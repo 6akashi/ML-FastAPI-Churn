@@ -1,7 +1,15 @@
 from typing import List, Tuple
 
 import pandas as pd
+
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import f1_score, accuracy_score
 from sklearn.model_selection import train_test_split
+from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import OneHotEncoder
+
 
 from models.DatasetRowChurn import DatasetRowChurn
 
@@ -72,7 +80,7 @@ class ChurnDatasetModule:
 
       def split_data(self, test_size: float = 0.2, random_state: int = 42):
 
-            x, y, _, _ = self.prepare_data()
+            x, y, num_features, cat_features = self.prepare_data()
 
             X_train, X_test, y_train, y_test = train_test_split(
                   x, y,
@@ -84,12 +92,40 @@ class ChurnDatasetModule:
             train_dist = {str(k): v for k, v in y_train.value_counts(normalize=True).to_dict().items()}
             test_dist = {str(k): v for k, v in y_test.value_counts(normalize=True).to_dict().items()}
 
-            return {
-                  "train_size": len(X_train),
-                  "test_size": len(X_test),
-                  "train_target_dist": train_dist,
-                  "test_target_dist": test_dist
+            # return {
+            #       "train_size": len(X_train),
+            #       "test_size": len(X_test),
+            #       "train_target_dist": train_dist,
+            #       "test_target_dist": test_dist
+            # }
+            return X_train, X_test, y_train, y_test, y, num_features, cat_features
+
+
+      def train_churn_model(self):
+
+            X_train, X_test, y_train, y_test, y, num_features, cat_features = self.split_data()
+
+            preprocessor = ColumnTransformer(
+                  transformers=[
+                        ('num', StandardScaler(), num_features),
+                        # Убирвем линейную зависимрсть(мультиколлинеарность), удаляя один из столбцов
+                        ('cat', OneHotEncoder(drop='first', handle_unknown='ignore'), cat_features)
+                  ]
+            )
+
+            pipline = Pipeline(steps=[
+                  ('preprocessor', preprocessor),
+                  ('classifier', LogisticRegression(max_iter=1000))
+            ])
+
+            pipline.fit(X_train, y_train)
+
+            y_pred = pipline.predict(X_test)
+            metrics = {
+                  'accuracy': round(accuracy_score(y_test, y_pred), 4),
+                  'f1-score': round(f1_score(y_test, y_pred, pos_label='Yes' if 'Yes' in y.values else 1), 4)
             }
+            return pipline, metrics
 
 
       def _fill_popular_class(self, list_classes: List[str], df: pd.DataFrame) -> pd.DataFrame:
