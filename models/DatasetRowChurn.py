@@ -10,3 +10,4 @@ class DatasetRowChurn(BaseModel):
       device_type: str
       payment_method: str
       autopay_enabled: int
+      churn: int
