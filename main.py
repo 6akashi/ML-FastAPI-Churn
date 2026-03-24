@@ -106,3 +106,17 @@ def get_model_status():
         "metrics": app.state.model.metrics
     }
 
+@app.get("/model/schema")
+def get_feature_churn():
+     return {
+            "monthly_fee": "float",
+            "usage_hours": "float",
+            "support_requests": "int",
+            "account_age_months": "int",
+            "failed_payments": "int",
+            "region": "str",
+            "device_type": "str",
+            "payment_method": "str",
+            "autopay_enabled": "int",
+     }
+

@@ -3,7 +3,7 @@ from pydantic import BaseModel
 class DatasetRowChurn(BaseModel):
       monthly_fee: float
       usage_hours: float
-      support_request: int
+      support_requests: int
       account_age_months: int
       failed_payments: int
       region: str

@@ -107,68 +107,6 @@ class ChurnDatasetModule:
             # }
             return X_train, X_test, y_train, y_test, y, num_features, cat_features
 
-
-      def train_churn_model(self):
-
-            X_train, X_test, y_train, y_test, y, num_features, cat_features = self.split_data()
-
-            preprocessor = ColumnTransformer(
-                  transformers=[
-                        ('num', StandardScaler(), num_features),
-                        # Убирвем линейную зависимрсть(мультиколлинеарность), удаляя один из столбцов
-                        ('cat', OneHotEncoder(drop='first', handle_unknown='ignore'), cat_features)
-                  ]
-            )
-
-            pipline = Pipeline(steps=[
-                  ('preprocessor', preprocessor),
-                  ('classifier', LogisticRegression(max_iter=1000))
-            ])
-
-            pipline.fit(X_train, y_train)
-            last_train = datetime.now()
-            
-            y_pred = pipline.predict(X_test)
-            metrics = {
-                  'accuracy': round(accuracy_score(y_test, y_pred), 4),
-                  'f1-score': round(f1_score(y_test, y_pred, pos_label='Yes' if 'Yes' in y.values else 1), 4)
-            }
-            self.model = ModelPipeline(pipline, last_train, "Trained", metrics)
-            
-
-      def save_churn_model(self, filename:str = "churn_model_v1.joblib"):
-            path = os.path.join("storage", filename)
-            joblib.dump(self.model.pipeline, path)
-            model_data = {
-                  "last_train_time": self.model.time.isoformat(),
-                  "status": self.model.status,
-                  "metrics": self.model.metrics
-            }
-            path = os.path.join("storage", filename.split(".")[0] + ".json")
-            with open(path, "w", encoding="utf-8") as f:
-                  json.dump(model_data, f, indent=4, ensure_ascii=False)
-
-      def load_churn_model(self, filename:str = "churn_model_v1.joblib"):
-            path_model = os.path.join("storage", filename)
-            path_json = os.path.join("storage", filename.split(".")[0] + ".json")
-            if os.path.exists(path_model) and os.path.exists(path_json):
-                  pipeline = joblib.load(path_model)
-                  path = os.path.join("storage", filename.split(".")[0] + ".json")
-                  
-                  with open(path_json, "r", encoding="utf-8") as f:
-                        model_data = json.load(f)
-                  self.model = ModelPipeline(pipeline,
-                                             model_data["last_train_time"],
-                                             model_data["status"],
-                                             model_data["metrics"]
-                                             )
-                  
-                        
-                  return self.model
-            else:
-                  raise LoadModelError
-            
-
       def _fill_popular_class(self, list_classes: List[str], df: pd.DataFrame) -> pd.DataFrame:
             for cl in list_classes:
                   popular_cl = df[cl].value_counts().index[0]
