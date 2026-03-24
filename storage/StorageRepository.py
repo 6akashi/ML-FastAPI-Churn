@@ -1,9 +1,10 @@
 import json
 import os
 
+from fastapi import HTTPException
 import joblib
 
-from errors.Errors import LoadModelError
+
 from models.ModelPipeline import ModelPipeline
 
 
@@ -39,4 +40,4 @@ class StorageRepository:
                   return model, model_data
             else:
                   print(f"DEBUG: Files NOT found at the path above!")
-                  raise LoadModelError
+                  raise HTTPException(status_code=400, detail="Files NOT found at the path above!")

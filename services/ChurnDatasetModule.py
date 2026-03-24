@@ -3,6 +3,7 @@ import json
 import os
 from typing import List, Tuple
 
+from fastapi import HTTPException
 import joblib
 import pandas as pd
 
@@ -15,7 +16,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder
 
 
-from errors.Errors import LoadModelError
+
 from models.DatasetRowChurn import DatasetRowChurn
 from models.ModelPipeline import ModelPipeline
 
@@ -32,19 +33,18 @@ class ChurnDatasetModule:
                   self.data = pd.read_csv(file_path)
                   print(f"File {file_path} succesfully load. Strings: {len(self.data)}")
             except Exception as e:
-                  print(f"Error, cannot read file: {e}")
+                  raise HTTPException(status_code=400, detail="Dataset is empty or file isn't found. Train is impossible")
 
       def transform_to_objects(self):
             # From DataFrame to DatasetRowChurn list
             if self.data.empty:
-                  print("Data doesn't load")
-                  return
+                  raise HTTPException(status_code=400, detail="Data is not found")
             
             self.objects = [DatasetRowChurn(**row) for row in self.data.to_dict('records')]
             
       def get_info(self) -> dict:
             if self.data.empty:
-                  return {"error": "Dataset empty or not loaded"}
+                  raise HTTPException(status_code=400, detail="Dataset empty or not loaded")
             
             rows, columns = self.data.shape
 

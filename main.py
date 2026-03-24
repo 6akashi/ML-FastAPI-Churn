@@ -1,11 +1,17 @@
 import os
 from typing import List, Union
 
-from fastapi import Depends, FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException, Request
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
+from starlette.exceptions import HTTPException as StarletteHTTPException
 import pandas as pd
 
+
+from errors.ErrorResponse import ErrorResponse
 from models.FeatureVectorChurn import FeatureVectorChurn
 from models.ModelPipeline import ModelPipeline
+from models.PredictionResponseChurn import PredictResponseChurn
 from models.TrainingConfigChurn import TrainingConfigChurn
 from services.ChurnDatasetModule import ChurnDatasetModule
 from services.PredictionService import PredictionService
@@ -42,14 +48,80 @@ def startup_event():
             app.state.model_status = "Not Loaded"
             print(f"Startup: Model not found or error: {e}")
 
+@app.exception_handler(StarletteHTTPException)
+async def http_exception_handler(request: Request, exc: StarletteHTTPException):
+     return JSONResponse(
+          status_code=exc.status_code,
+          content=ErrorResponse(
+               code="HTTP_ERROR",
+               message=exc.detail
+          ).dict()
+     )
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    return JSONResponse(
+        status_code=422,
+        content=ErrorResponse(
+            code="VALIDATION_ERROR",
+            message="Error at data structure",
+            details=exc.errors()
+        ).dict()
+    )
+
+@app.exception_handler(Exception)
+async def common_exception_handler(request: Request, exc: Exception):
+    return JSONResponse(
+        status_code=500,
+        content=ErrorResponse(
+            code="INTERNAL_SERVER_ERROR",
+            message="Произошла непредвиденная ошибка на сервере",
+            details=str(exc) if os.getenv("DEBUG") else None
+        ).dict()
+    )
+
 @app.get("/")
 def say_hello():
       return {"message": "ml churn service is running"}
 
-@app.post("/predict")
+@app.post("/predict",
+            response_model=PredictResponseChurn,
+            responses={
+                400: {
+                    "model": ErrorResponse,
+                    "description": "Model isn't ready to work",
+                    "content": {
+                        "application/json": {
+                            "example": {
+                                "code": "MODEL_NOT_READY",
+                                "message": "Model not trained. Call /model/train first",
+                                "details": None
+                            }
+                        }
+                    }
+                },
+                422: {
+                    "model": ErrorResponse,
+                    "description": "Input features errors",
+                    "content": {
+                        "application/json": {
+                            "example": {
+                                "code": "FEATURE_MISMATCH",
+                                "message": "Передано неверное количество признаков",
+                                "details": {"expected": 10, "received": 8}
+                            }
+                        }
+                    }
+                }
+            }
+)
 def predict(features: Union[FeatureVectorChurn, List[FeatureVectorChurn]],
             service: PredictionService = Depends(get_prediction_service)):
-      
+      if not hasattr(app.state, "model") or app.state.model is None:
+            raise HTTPException(
+                  status_code=404, 
+                  detail="Model isn't loaded. Please, train model by /model/train"
+            )
       return service.predict(features)
 
 
@@ -73,7 +145,36 @@ def dataset_split_info():
             "cat_features": cat_features
       }
 
-@app.post("/model/train")
+@app.post("/model/train",
+            responses={
+                  400: {
+                      "model": ErrorResponse,
+                      "description": "Data error or invalid parametrizes",
+                      "content": {
+                          "application/json": {
+                              "example": {
+                                  "code": "TRAINING_FAILED",
+                                  "message": "Dataset empty or not found",
+                                  "details": "File data/churn_dataset.csv not found"
+                              }
+                          }
+                      }
+                  },
+                  422: {
+                      "model": ErrorResponse,
+                      "description": "Data validation error (invalid model type)",
+                      "content": {
+                          "application/json": {
+                              "example": {
+                                  "code": "VALIDATION_ERROR",
+                                  "message": "Unsupported model type",
+                                  "details": "Value 'random_forest_v2' is not a valid model_type. Expected: ['logistic_regression', 'random_forest']"
+                              }
+                          }
+                      }
+                  }
+            }     
+    )
 def model_train(config: TrainingConfigChurn, service: TrainingService = Depends(get_training_service)):
       data_loader.load_from_csv("data/churn_dataset.csv")
       model = service.run_training_pipeline(data_loader.data, config)

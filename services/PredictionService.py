@@ -23,6 +23,28 @@ class PredictionService:
             input_df = pd.DataFrame([item.dict() for item in data_list])
 
             try:
+           
+                  expected_features = self.model_container.pipeline.feature_names_in_
+
+                 
+                  if input_df.shape[1] != len(expected_features):
+                      raise HTTPException(
+                          status_code=422,
+                          detail={
+                              "code": "FEATURE_COUNT_MISMATCH",
+                              "message": f"Expected {len(expected_features)} features, but got {input_df.shape[1]}",
+                              "expected": list(expected_features)
+                          }
+                      )
+
+                  
+                  input_df = input_df[expected_features]
+
+            except AttributeError:
+           
+                  pass
+
+            try:
                   preds = self.model_container.pipeline.predict(input_df)
                   probs = self.model_container.pipeline.predict_proba(input_df)
 
