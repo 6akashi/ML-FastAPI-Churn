@@ -6,6 +6,7 @@ import pandas as pd
 
 from models.FeatureVectorChurn import FeatureVectorChurn
 from models.ModelPipeline import ModelPipeline
+from models.TrainingConfigChurn import TrainingConfigChurn
 from services.ChurnDatasetModule import ChurnDatasetModule
 from services.PredictionService import PredictionService
 from services.TrainingService import TrainingService
@@ -73,9 +74,9 @@ def dataset_split_info():
       }
 
 @app.post("/model/train")
-def model_train(service: TrainingService = Depends(get_training_service)):
+def model_train(config: TrainingConfigChurn, service: TrainingService = Depends(get_training_service)):
       data_loader.load_from_csv("data/churn_dataset.csv")
-      model = service.run_training_pipeline(data_loader.data)
+      model = service.run_training_pipeline(data_loader.data, config)
       
       app.state.model = model
       app.state.model_status = "Loaded"
@@ -98,6 +99,8 @@ def get_model_status():
             
     
       return {
+        "model_type": app.state.model.model_type,
+        "hyperparameters": app.state.model.hyperparameters,
         "status": app.state.model.status,
         "last_train_time": app.state.model.time,
         "metrics": app.state.model.metrics
