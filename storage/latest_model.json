@@ -1,0 +1,8 @@
+{
+    "last_train_time": "2026-03-24T10:31:58.895829",
+    "status": "Trained",
+    "metrics": {
+        "accuracy": 0.79,
+        "f1-score": 0.0455
+    }
+}

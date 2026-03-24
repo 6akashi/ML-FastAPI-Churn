@@ -1,5 +1,9 @@
+from datetime import datetime
+import json
+import os
 from typing import List, Tuple
 
+import joblib
 import pandas as pd
 
 from sklearn.preprocessing import StandardScaler
@@ -12,12 +16,14 @@ from sklearn.preprocessing import OneHotEncoder
 
 
 from models.DatasetRowChurn import DatasetRowChurn
+from models.ModelPipeline import ModelPipeline
 
 
 class ChurnDatasetModule:
       def __init__(self):
             self.data: pd.DataFrame = pd.DataFrame()
             self.objects: List[DatasetRowChurn] = []
+            self.model = None
 
       def load_from_csv(self, file_path: str):
             # Read CSV file and save to DataFrame
@@ -119,14 +125,48 @@ class ChurnDatasetModule:
             ])
 
             pipline.fit(X_train, y_train)
-
+            last_train = datetime.now()
+            
             y_pred = pipline.predict(X_test)
             metrics = {
                   'accuracy': round(accuracy_score(y_test, y_pred), 4),
                   'f1-score': round(f1_score(y_test, y_pred, pos_label='Yes' if 'Yes' in y.values else 1), 4)
             }
-            return pipline, metrics
+            self.model = ModelPipeline(pipline, last_train, "Trained", metrics)
+            
 
+      def save_churn_model(self, filename:str = "churn_model_v1.joblib"):
+            path = os.path.join("storage", filename)
+            joblib.dump(self.model.pipeline, path)
+            model_data = {
+                  "last_train_time": self.model.time.isoformat(),
+                  "status": self.model.status,
+                  "metrics": self.model.metrics
+            }
+            path = os.path.join("storage", filename.split(".")[0] + ".json")
+            with open(path, "w", encoding="utf-8") as f:
+                  json.dump(model_data, f, indent=4, ensure_ascii=False)
+
+      def load_churn_model(self, filename:str = "churn_model_v1.joblib"):
+            path_model = os.path.join("storage", filename)
+            path_json = os.path.join("storage", filename.split(".")[0] + ".json")
+            if os.path.exists(path_model) and os.path.exists(path_json):
+                  pipeline = joblib.load(path_model)
+                  path = os.path.join("storage", filename.split(".")[0] + ".json")
+                  
+                  with open(path_json, "r", encoding="utf-8") as f:
+                        model_data = json.load(f)
+                  self.model = ModelPipeline(pipeline,
+                                             model_data["last_train_time"],
+                                             model_data["status"],
+                                             model_data["metrics"]
+                                             )
+                  
+                        
+                  return self.model
+            else:
+                  return None
+            
 
       def _fill_popular_class(self, list_classes: List[str], df: pd.DataFrame) -> pd.DataFrame:
             for cl in list_classes:

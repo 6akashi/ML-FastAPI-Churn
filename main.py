@@ -1,3 +1,5 @@
+import os
+
 from fastapi import FastAPI
 
 from models.FeatureVectorChurn import FeatureVectorChurn
@@ -5,6 +7,11 @@ from services.ChurnDatasetModule import ChurnDatasetModule
 
 app = FastAPI()
 dataset_loader = ChurnDatasetModule() 
+
+@app.on_event("startup")
+def startup_event():
+      dataset_loader.load_churn_model("churn_model_v1.joblib")
+      print("Startup: Model checked/loaded")
 
 @app.get("/")
 def say_hello():
@@ -28,9 +35,25 @@ def dataset_split_info():
 def model_train():
       dataset_loader.load_from_csv("data/churn_dataset.csv")
 
-      model_pipeline, metrics = dataset_loader.train_churn_model()
+      dataset_loader.train_churn_model()
 
+      dataset_loader.save_churn_model("latest_model.joblib")
+      
       return {
             "status": "Model trained succesfully",
-            "metrics": metrics
+            "metrics": dataset_loader.model.metrics
       }
+
+@app.get("/model/status")
+def get_model_status():
+      if not dataset_loader.model:
+            if not dataset_loader.load_churn_model("latest_model.joblib"):
+                  return {"status": "Not trained", "message": "No model found"}
+    
+      return {
+          "status": dataset_loader.model.status,
+          "last_train_time": dataset_loader.model.time,
+          "metrics": dataset_loader.model.metrics
+      }
+
+
