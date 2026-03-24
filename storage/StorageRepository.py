@@ -12,7 +12,7 @@ class StorageRepository:
       def save_churn_model(pipeline, metadata, filename:str = "churn_model_v1"):
             path = os.path.join("storage", f"{filename}.joblib")
             joblib.dump(pipeline, path)
-            
+            print(f"DEBUG: Looking for model at {path}")
             path = os.path.join("storage", f"{filename}.json")
             with open(path, "w", encoding="utf-8") as f:
                   json.dump(metadata, f, indent=4, ensure_ascii=False)
@@ -21,12 +21,15 @@ class StorageRepository:
       def load_churn_model(filename:str = "churn_model_v1"):
             path_model = os.path.join("storage", f"{filename}.joblib")
             path_json = os.path.join("storage", f"{filename}.json")
+            print(f"DEBUG: Looking for model at {path_model}")
             if os.path.exists(path_model) and os.path.exists(path_json):
                   pipeline = joblib.load(path_model)
                   
                   with open(path_json, "r", encoding="utf-8") as f:
                         model_data = json.load(f)
                   model = ModelPipeline(pipeline,
+                                          model_data["model_type"],
+                                          model_data["hyperparameters"],
                                           model_data["last_train_time"],
                                           model_data["status"],
                                           model_data["metrics"]
@@ -35,4 +38,5 @@ class StorageRepository:
                         
                   return model, model_data
             else:
+                  print(f"DEBUG: Files NOT found at the path above!")
                   raise LoadModelError

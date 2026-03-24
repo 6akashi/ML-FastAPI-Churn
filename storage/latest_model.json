@@ -1,8 +1,15 @@
 {
-    "metrics": {
-        "accuracy": 0.79,
-        "f1-score": 0.0455
+    "model_type": "random_forest",
+    "hyperparameters": {
+        "n_estimators": 100,
+        "max_depth": 10,
+        "min_samples_split": 2,
+        "random_state": 42
     },
-    "last_train_time": "2026-03-24T22:53:51.684821",
+    "metrics": {
+        "accuracy": 0.7925,
+        "f1-score": 0.1443
+    },
+    "last_train_time": "2026-03-24T23:38:48.531388",
     "status": "Trained"
 }
