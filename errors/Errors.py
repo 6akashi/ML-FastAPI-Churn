@@ -1,0 +1,2 @@
+class LoadModelError(Exception):
+      pass

@@ -15,6 +15,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder
 
 
+from errors.Errors import LoadModelError
 from models.DatasetRowChurn import DatasetRowChurn
 from models.ModelPipeline import ModelPipeline
 
@@ -165,7 +166,7 @@ class ChurnDatasetModule:
                         
                   return self.model
             else:
-                  return None
+                  raise LoadModelError
             
 
       def _fill_popular_class(self, list_classes: List[str], df: pd.DataFrame) -> pd.DataFrame:
