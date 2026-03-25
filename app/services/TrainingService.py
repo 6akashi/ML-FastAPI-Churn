@@ -12,10 +12,10 @@ from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.ensemble import RandomForestClassifier
-from models.ModelPipeline import ModelPipeline
-from models.TrainingConfigChurn import TrainingConfigChurn
-from services.ChurnDatasetModule import ChurnDatasetModule
-from storage.StorageRepository import StorageRepository
+from app.models.ModelPipeline import ModelPipeline
+from app.models.TrainingConfigChurn import TrainingConfigChurn
+from app.services.ChurnDatasetModule import ChurnDatasetModule
+from app.storage.StorageRepository import StorageRepository
 
 logger = logging.getLogger(__name__)
 

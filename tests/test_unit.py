@@ -1,4 +1,10 @@
-from services.ChurnDatasetModule import ChurnDatasetModule
+
+
+
+
+
+from app.services.ChurnDatasetModule import ChurnDatasetModule
+
 
 def test_prepare_data_logic(sample_data):
     loader = ChurnDatasetModule()

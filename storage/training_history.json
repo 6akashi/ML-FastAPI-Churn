@@ -2,211 +2,21 @@
     {
         "id": 1,
         "model_name": "churn_v1",
-        "model_type": "random_forest",
+        "model_type": "logistic_regression",
         "hyperparameters": {
-            "n_estimators": 100,
-            "max_depth": 10.0,
-            "random_state": 42.0
+            "C": 0.5,
+            "max_iter": 1000
         },
         "metrics": {
-            "accuracy": 0.7925,
-            "f1-score": 0.1443
+            "accuracy": 0.7875,
+            "f1-score": 0.023
         },
-        "timestamp": "2026-03-25 21:25:47.032080",
+        "timestamp": "2026-03-25 23:34:22.114493",
         "status": "Trained"
     },
     {
         "id": 2,
         "model_name": "churn_v2",
-        "model_type": "random_forest",
-        "hyperparameters": {
-            "n_estimators": 100,
-            "max_depth": 10.0,
-            "random_state": 42.0
-        },
-        "metrics": {
-            "accuracy": 0.7925,
-            "f1-score": 0.1443
-        },
-        "timestamp": "2026-03-25 21:28:15.202548",
-        "status": "Trained"
-    },
-    {
-        "id": 3,
-        "model_name": "churn_v3",
-        "model_type": "random_forest",
-        "hyperparameters": {
-            "n_estimators": 100,
-            "max_depth": 10.0
-        },
-        "metrics": {
-            "accuracy": 0.785,
-            "f1-score": 0.1224
-        },
-        "timestamp": "2026-03-25 21:30:58.376995",
-        "status": "Trained"
-    },
-    {
-        "id": 4,
-        "model_name": "churn_v4",
-        "model_type": "logistic_regression",
-        "hyperparameters": {
-            "C": 0.5,
-            "max_iter": 1000
-        },
-        "metrics": {
-            "accuracy": 0.7875,
-            "f1-score": 0.023
-        },
-        "timestamp": "2026-03-25 21:35:11.935807",
-        "status": "Trained"
-    },
-    {
-        "id": 5,
-        "model_name": "churn_v5",
-        "model_type": "logistic_regression",
-        "hyperparameters": {
-            "C": 0.5,
-            "max_iter": 1000
-        },
-        "metrics": {
-            "accuracy": 0.7875,
-            "f1-score": 0.023
-        },
-        "timestamp": "2026-03-25 21:35:16.612223",
-        "status": "Trained"
-    },
-    {
-        "id": 6,
-        "model_name": "churn_v6",
-        "model_type": "logistic_regression",
-        "hyperparameters": {
-            "C": 0.5,
-            "max_iter": 1000
-        },
-        "metrics": {
-            "accuracy": 0.7875,
-            "f1-score": 0.023
-        },
-        "timestamp": "2026-03-25 21:35:17.483489",
-        "status": "Trained"
-    },
-    {
-        "id": 7,
-        "model_name": "churn_v7",
-        "model_type": "logistic_regression",
-        "hyperparameters": {
-            "C": 0.5,
-            "max_iter": 1000
-        },
-        "metrics": {
-            "accuracy": 0.7875,
-            "f1-score": 0.023
-        },
-        "timestamp": "2026-03-25 21:35:18.273831",
-        "status": "Trained"
-    },
-    {
-        "id": 8,
-        "model_name": "churn_v8",
-        "model_type": "logistic_regression",
-        "hyperparameters": {
-            "C": 1.0
-        },
-        "metrics": {
-            "accuracy": 0.79,
-            "f1-score": 0.0455
-        },
-        "timestamp": "2026-03-25 21:46:59.387734",
-        "status": "Trained"
-    },
-    {
-        "id": 9,
-        "model_name": "churn_v9",
-        "model_type": "logistic_regression",
-        "hyperparameters": {
-            "C": 1.0
-        },
-        "metrics": {
-            "accuracy": 0.79,
-            "f1-score": 0.0455
-        },
-        "timestamp": "2026-03-25 21:48:26.792877",
-        "status": "Trained"
-    },
-    {
-        "id": 10,
-        "model_name": "churn_v10",
-        "model_type": "logistic_regression",
-        "hyperparameters": {
-            "C": 1.0
-        },
-        "metrics": {
-            "accuracy": 0.79,
-            "f1-score": 0.0455
-        },
-        "timestamp": "2026-03-25 21:50:18.598623",
-        "status": "Trained"
-    },
-    {
-        "id": 11,
-        "model_name": "churn_v11",
-        "model_type": "logistic_regression",
-        "hyperparameters": {
-            "C": 1.0
-        },
-        "metrics": {
-            "accuracy": 0.79,
-            "f1-score": 0.0455
-        },
-        "timestamp": "2026-03-25 21:52:51.259305",
-        "status": "Trained"
-    },
-    {
-        "id": 12,
-        "model_name": "churn_v12",
-        "model_type": "logistic_regression",
-        "hyperparameters": {
-            "C": 1.0
-        },
-        "metrics": {
-            "accuracy": 0.79,
-            "f1-score": 0.0455
-        },
-        "timestamp": "2026-03-25 21:54:55.860908",
-        "status": "Trained"
-    },
-    {
-        "id": 13,
-        "model_name": "churn_v13",
-        "model_type": "logistic_regression",
-        "hyperparameters": {
-            "C": 1.0
-        },
-        "metrics": {
-            "accuracy": 0.79,
-            "f1-score": 0.0455
-        },
-        "timestamp": "2026-03-25 22:10:32.000005",
-        "status": "Trained"
-    },
-    {
-        "id": 14,
-        "model_name": "churn_v14",
-        "model_type": "logistic_regression",
-        "hyperparameters": {
-            "C": 1.0
-        },
-        "metrics": {
-            "accuracy": 0.79,
-            "f1-score": 0.0455
-        },
-        "timestamp": "2026-03-25 22:11:00.433298",
-        "status": "Trained"
-    },
-    {
-        "id": 15,
-        "model_name": "churn_v15",
         "model_type": "logistic_regression",
         "hyperparameters": {
             "C": 0.1
@@ -215,7 +25,161 @@
             "accuracy": 0.7925,
             "f1-score": 0.0235
         },
-        "timestamp": "2026-03-25 22:12:47.595278",
+        "timestamp": "2026-03-25 23:42:59.044720",
+        "status": "Trained"
+    },
+    {
+        "id": 3,
+        "model_name": "churn_v3",
+        "model_type": "logistic_regression",
+        "hyperparameters": {
+            "C": 0.1
+        },
+        "metrics": {
+            "accuracy": 0.7925,
+            "f1-score": 0.0235
+        },
+        "timestamp": "2026-03-25 23:43:17.102750",
+        "status": "Trained"
+    },
+    {
+        "id": 4,
+        "model_name": "churn_v4",
+        "model_type": "logistic_regression",
+        "hyperparameters": {
+            "C": 0.1
+        },
+        "metrics": {
+            "accuracy": 0.7925,
+            "f1-score": 0.0235
+        },
+        "timestamp": "2026-03-25 23:48:41.441750",
+        "status": "Trained"
+    },
+    {
+        "id": 5,
+        "model_name": "churn_v5",
+        "model_type": "logistic_regression",
+        "hyperparameters": {
+            "C": 0.1
+        },
+        "metrics": {
+            "accuracy": 0.7925,
+            "f1-score": 0.0235
+        },
+        "timestamp": "2026-03-25 23:53:08.436522",
+        "status": "Trained"
+    },
+    {
+        "id": 6,
+        "model_name": "churn_v6",
+        "model_type": "logistic_regression",
+        "hyperparameters": {
+            "C": 0.1
+        },
+        "metrics": {
+            "accuracy": 0.7925,
+            "f1-score": 0.0235
+        },
+        "timestamp": "2026-03-25 23:55:09.745108",
+        "status": "Trained"
+    },
+    {
+        "id": 7,
+        "model_name": "churn_v7",
+        "model_type": "logistic_regression",
+        "hyperparameters": {
+            "C": 0.1
+        },
+        "metrics": {
+            "accuracy": 0.7925,
+            "f1-score": 0.0235
+        },
+        "timestamp": "2026-03-25 23:55:31.860371",
+        "status": "Trained"
+    },
+    {
+        "id": 8,
+        "model_name": "churn_v8",
+        "model_type": "logistic_regression",
+        "hyperparameters": {
+            "C": 0.1
+        },
+        "metrics": {
+            "accuracy": 0.7925,
+            "f1-score": 0.0235
+        },
+        "timestamp": "2026-03-25 23:57:06.770681",
+        "status": "Trained"
+    },
+    {
+        "id": 9,
+        "model_name": "churn_v9",
+        "model_type": "logistic_regression",
+        "hyperparameters": {
+            "C": 0.1
+        },
+        "metrics": {
+            "accuracy": 0.7925,
+            "f1-score": 0.0235
+        },
+        "timestamp": "2026-03-26 00:01:25.510200",
+        "status": "Trained"
+    },
+    {
+        "id": 10,
+        "model_name": "churn_v10",
+        "model_type": "logistic_regression",
+        "hyperparameters": {
+            "C": 0.1
+        },
+        "metrics": {
+            "accuracy": 0.7925,
+            "f1-score": 0.0235
+        },
+        "timestamp": "2026-03-26 00:04:06.112081",
+        "status": "Trained"
+    },
+    {
+        "id": 11,
+        "model_name": "churn_v11",
+        "model_type": "logistic_regression",
+        "hyperparameters": {
+            "C": 0.1
+        },
+        "metrics": {
+            "accuracy": 0.7925,
+            "f1-score": 0.0235
+        },
+        "timestamp": "2026-03-26 00:04:15.034865",
+        "status": "Trained"
+    },
+    {
+        "id": 12,
+        "model_name": "churn_v12",
+        "model_type": "logistic_regression",
+        "hyperparameters": {
+            "C": 0.1
+        },
+        "metrics": {
+            "accuracy": 0.7925,
+            "f1-score": 0.0235
+        },
+        "timestamp": "2026-03-26 00:06:50.178217",
+        "status": "Trained"
+    },
+    {
+        "id": 13,
+        "model_name": "churn_v13",
+        "model_type": "logistic_regression",
+        "hyperparameters": {
+            "C": 0.1
+        },
+        "metrics": {
+            "accuracy": 0.7925,
+            "f1-score": 0.0235
+        },
+        "timestamp": "2026-03-26 00:07:25.594324",
         "status": "Trained"
     }
 ]

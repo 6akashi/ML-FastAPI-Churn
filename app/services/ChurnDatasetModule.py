@@ -18,8 +18,8 @@ from sklearn.preprocessing import OneHotEncoder
 
 
 
-from models.DatasetRowChurn import DatasetRowChurn
-from models.ModelPipeline import ModelPipeline
+from app.models.DatasetRowChurn import DatasetRowChurn
+from app.models.ModelPipeline import ModelPipeline
 
 logger = logging.getLogger(__name__)
 

@@ -4,8 +4,10 @@ from typing import List, Union
 from fastapi import HTTPException
 import pandas as pd
 
-from models.FeatureVectorChurn import FeatureVectorChurn
-from models.PredictionResponseChurn import PredictResponseChurn, SinglePrediction
+from app.models.FeatureVectorChurn import FeatureVectorChurn
+from app.models.PredictionResponseChurn import PredictResponseChurn, SinglePrediction
+
+
 
 logger = logging.getLogger(__name__)
 
