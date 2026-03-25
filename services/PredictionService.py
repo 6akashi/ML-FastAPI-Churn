@@ -1,3 +1,4 @@
+import logging
 from typing import List, Union
 
 from fastapi import HTTPException
@@ -6,6 +7,7 @@ import pandas as pd
 from models.FeatureVectorChurn import FeatureVectorChurn
 from models.PredictionResponseChurn import PredictResponseChurn, SinglePrediction
 
+logger = logging.getLogger(__name__)
 
 class PredictionService:
       def __init__(self, model_container):
@@ -13,13 +15,14 @@ class PredictionService:
       
       def predict(self, features: Union[FeatureVectorChurn, List[FeatureVectorChurn]]) -> PredictResponseChurn:
             if not self.model_container or not hasattr(self.model_container, "pipeline"):
+                  logger.warning("Попытка предсказания без обученной модели")
                   raise HTTPException(
                       status_code=400,
                       detail="Model isn't trained. Call /model/train"
                   )
       
             data_list = [features] if isinstance(features, FeatureVectorChurn) else features
-      
+            logger.info(f"Запрос на предсказание для {len(data_list)} объектов")
             input_df = pd.DataFrame([item.dict() for item in data_list])
 
             try:
@@ -28,6 +31,7 @@ class PredictionService:
 
                  
                   if input_df.shape[1] != len(expected_features):
+                      logger.error(f"Mismatch: ожидалось {len(expected_features)}, пришло {input_df.shape[1]}")
                       raise HTTPException(
                           status_code=422,
                           detail={
@@ -41,13 +45,13 @@ class PredictionService:
                   input_df = input_df[expected_features]
 
             except AttributeError:
-           
+                  logger.debug("Pipeline не содержит feature_names_in_, пропускаем проверку порядка")
                   pass
 
             try:
                   preds = self.model_container.pipeline.predict(input_df)
                   probs = self.model_container.pipeline.predict_proba(input_df)
-
+                  logger.info("Предсказание успешно выполнено")
                   results = []
 
                   for i, p in enumerate(preds):
@@ -62,4 +66,5 @@ class PredictionService:
                   return PredictResponseChurn(status="succes", results=results)
       
             except Exception as e:
+                  logger.critical(f"Критическая ошибка инференса: {str(e)}", exc_info=True)
                   raise HTTPException(status_code=500, detail=f"Inference error: {str(e)}")

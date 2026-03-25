@@ -1,5 +1,6 @@
 from datetime import datetime
 import json
+import logging
 import os
 from typing import List, Tuple
 
@@ -20,6 +21,7 @@ from sklearn.preprocessing import OneHotEncoder
 from models.DatasetRowChurn import DatasetRowChurn
 from models.ModelPipeline import ModelPipeline
 
+logger = logging.getLogger(__name__)
 
 class ChurnDatasetModule:
       def __init__(self):
@@ -30,9 +32,14 @@ class ChurnDatasetModule:
       def load_from_csv(self, file_path: str):
             # Read CSV file and save to DataFrame
             try:
+                  logger.info(f"Load dataset from: {file_path}")
                   self.data = pd.read_csv(file_path)
-                  print(f"File {file_path} succesfully load. Strings: {len(self.data)}")
+                  if self.data.empty:
+                      logger.warning(f"Файл {file_path} прочитан, но он пустой!")
+                  else:
+                      logger.info(f"Успешно загружено {len(self.data)} строк.")
             except Exception as e:
+                  logger.error(f"Ошибка при чтении CSV {file_path}: {str(e)}")
                   raise HTTPException(status_code=400, detail="Dataset is empty or file isn't found. Train is impossible")
 
       def transform_to_objects(self):
@@ -67,16 +74,6 @@ class ChurnDatasetModule:
       def prepare_data(self, target_column: str = 'churn') -> Tuple[pd.DataFrame, pd.Series, List[str], List[str]]:
             df: pd.DataFrame = self.data.copy()
 
-            df = self._fill_popular_class(["monthly_fee", 
-                                           "support_requests", 
-                                           "failed_payments", 
-                                           "region", 
-                                           "device_type",
-                                           "payment_method",
-                                           "autopay_enabled"], df)
-
-            df = self._fill_mean_class(["usage_hours", "account_age_months"], df)
-
             x: pd.DataFrame = df.drop(columns=[target_column])
             y: pd.Series = df[target_column]
 
@@ -107,18 +104,5 @@ class ChurnDatasetModule:
             # }
             return X_train, X_test, y_train, y_test, y, num_features, cat_features
 
-      def _fill_popular_class(self, list_classes: List[str], df: pd.DataFrame) -> pd.DataFrame:
-            for cl in list_classes:
-                  popular_cl = df[cl].value_counts().index[0]
-                  df[cl] = df[cl].fillna(popular_cl)
-            
-            return df
-      
-      def _fill_mean_class(self, list_classes: List[str], df: pd.DataFrame) -> pd.DataFrame:
-            for cl in list_classes:
-                  mean = df[cl].mean()
-                  df[cl] = df[cl].fillna(mean)
-
-            return df
 
 

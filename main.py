@@ -1,5 +1,7 @@
+from datetime import datetime
+import logging
 import os
-from typing import List, Union
+from typing import List, Optional, Union
 
 from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
@@ -10,6 +12,7 @@ import pandas as pd
 
 from errors.ErrorResponse import ErrorResponse
 from models.FeatureVectorChurn import FeatureVectorChurn
+from models.HistoryRecord import HistoryRecord
 from models.ModelPipeline import ModelPipeline
 from models.PredictionResponseChurn import PredictResponseChurn
 from models.TrainingConfigChurn import TrainingConfigChurn
@@ -17,6 +20,13 @@ from services.ChurnDatasetModule import ChurnDatasetModule
 from services.PredictionService import PredictionService
 from services.TrainingService import TrainingService
 from storage.StorageRepository import StorageRepository
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+    handlers=[logging.StreamHandler()]
+)
+logger = logging.getLogger("churn-service")
 
 app = FastAPI()
 data_loader = ChurnDatasetModule()
@@ -117,11 +127,15 @@ def say_hello():
 )
 def predict(features: Union[FeatureVectorChurn, List[FeatureVectorChurn]],
             service: PredictionService = Depends(get_prediction_service)):
+      logger.info("Received prediction request")
       if not hasattr(app.state, "model") or app.state.model is None:
             raise HTTPException(
                   status_code=404, 
                   detail="Model isn't loaded. Please, train model by /model/train"
             )
+      
+      if logging.error:
+           logger.error(f"Inference failed")
       return service.predict(features)
 
 
@@ -179,13 +193,25 @@ def model_train(config: TrainingConfigChurn, service: TrainingService = Depends(
       data_loader.load_from_csv("data/churn_dataset.csv")
       model = service.run_training_pipeline(data_loader.data, config)
       
+      repo = StorageRepository()
+      current_history = repo.get_history()
+      new_id = len(current_history) + 1
+      
+      record = HistoryRecord(
+        id=new_id,
+        model_name=f"churn_v{new_id}",
+        model_type=config.model_type,
+        hyperparameters=config.hyperparameters,
+        metrics=model.metrics,
+        timestamp=datetime.now(),
+        status="Trained"
+    )
+      repo.log_training(record)
+
       app.state.model = model
       app.state.model_status = "Loaded"
       
-      return {
-            "status": "Model trained succesfully",
-            "metrics": model.metrics
-      }
+      return {"status": "Trained and Logged", "id": new_id, "metrics": model.metrics}
 
 @app.get("/model/status")
 def get_model_status():
@@ -221,3 +247,31 @@ def get_feature_churn():
             "autopay_enabled": "int",
      }
 
+@app.get("/model/metrics")
+def get_model_history(model_type: Optional[str] = None):
+    repo = StorageRepository()
+    history = repo.get_history()
+    
+    if model_type:
+        history = [r for r in history if r['model_type'] == model_type]
+    
+    if not history:
+        return {"message": "No history found"}
+
+
+    history.reverse()
+    
+    return {
+        "count": len(history),
+        "last_train": history[0],
+        "history": history[:10]
+    }
+
+@app.get("/health")
+def health_check():
+    return {
+        "status": "healthy",
+        "model_loaded": hasattr(app.state, "model") and app.state.model is not None,
+        "dataset_present": os.path.exists("data/churn_dataset.csv"),
+        "uptime": "up"
+    }

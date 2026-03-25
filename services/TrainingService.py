@@ -1,6 +1,9 @@
 from datetime import datetime
+import logging
 
+from fastapi import HTTPException
 from sklearn.compose import ColumnTransformer
+from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import f1_score, accuracy_score
@@ -14,6 +17,8 @@ from models.TrainingConfigChurn import TrainingConfigChurn
 from services.ChurnDatasetModule import ChurnDatasetModule
 from storage.StorageRepository import StorageRepository
 
+logger = logging.getLogger(__name__)
+
 MODEL_MAP = {
       "logistic_regression": LogisticRegression,
       "random_forest": RandomForestClassifier
@@ -24,21 +29,37 @@ class TrainingService:
             self.repo = reository
 
       def run_training_pipeline(self, raw_data, config: TrainingConfigChurn):
+            logger.info(f"Запуск обучения модели типа: {config.model_type}")
             data_loader = ChurnDatasetModule()
             data_loader.data = raw_data
             X_train, X_test, y_train, y_test, y, num_features, cat_features = data_loader.split_data()
 
+            logger.info(f"Данные разделены. Признаков: численных={len(num_features)}, категориальных={len(cat_features)}")
+
+            numeric_transformer = Pipeline(steps=[
+                  ('imputer', SimpleImputer(strategy="mean")),
+                  ('scaler', StandardScaler())
+            ])
+
+            categorical_transformer = Pipeline(steps=[
+                  ('imputer', SimpleImputer(strategy="most_frequent")),
+                  ('onehot', OneHotEncoder(drop='first', handle_unknown='ignore'))
+            ])
+
             preprocessor = ColumnTransformer(
                   transformers=[
-                        ('num', StandardScaler(), num_features),
+                        ('num', numeric_transformer, num_features),
                         # Убирвем линейную зависимрсть(мультиколлинеарность), удаляя один из столбцов
-                        ('cat', OneHotEncoder(drop='first', handle_unknown='ignore'), cat_features)
+                        ('cat', categorical_transformer, cat_features)
                   ]
             )
 
             model_class = MODEL_MAP.get(config.model_type.lower())
             if not model_class:
-                  raise ValueError(f"Model {config.model_type} doesn't support, list: {list(MODEL_MAP.keys())}")
+                  raise HTTPException(
+                      status_code=400, 
+                      detail=f"Model {config.model_type} doesn't support..."
+                  )
             
             clean_params = {}
             for key, value in config.hyperparameters.items():
@@ -55,6 +76,8 @@ class TrainingService:
                   ('classifier', model_instance)
             ])
 
+            logger.info("Начало процесса fit (обучение)...")
+
             pipline.fit(X_train, y_train)
             last_train = datetime.now()
             
@@ -63,6 +86,9 @@ class TrainingService:
                   'accuracy': round(accuracy_score(y_test, y_pred), 4),
                   'f1-score': round(f1_score(y_test, y_pred, pos_label='Yes' if 'Yes' in y.values else 1), 4)
             }
+
+            logger.info(f"Обучение завершено. Метрики: {metrics}")
+            
             model = ModelPipeline(pipline, config.model_type, config.hyperparameters, last_train, "Trained", metrics)
             metadata = {
                   "model_type": config.model_type,
